@@ -1,4 +1,4 @@
-import { createProvider, MAX_CHAT_OUTPUT_TOKENS, prepareChatMessages } from "@frox/core";
+import { createProvider, MAX_CHAT_OUTPUT_TOKENS, prepareChatMessages } from "@tex/core";
 import type {
   AssistantSettings,
   ExtensionMessage,
@@ -8,16 +8,21 @@ import type {
   MessagingAdapter,
   PlatformAdapter,
   StorageAdapter
-} from "@frox/core";
+} from "@tex/core";
 
-const STORAGE_PREFIX = "frox.web.";
+const STORAGE_PREFIX = "tex.web.";
 const SETTINGS_KEY = "assistant:settings";
 const ERROR_LOG_KEY = "assistant:errors";
+const THREADS_KEY = "assistant:threads";
+const POSITION_KEY = "assistant:position";
+const ACCOUNT_DATA_KEYS = [SETTINGS_KEY, THREADS_KEY] as const;
+const GLOBAL_DATA_KEYS = [ERROR_LOG_KEY, POSITION_KEY] as const;
 type StorageListener = () => void;
 
 class WebStorageAdapter implements StorageAdapter {
   private readonly listeners = new Map<string, Set<StorageListener>>();
   private listeningForStorageChanges = false;
+  private accountNamespace = "guest";
 
   async get<T>(key: string): Promise<T | undefined> {
     const stored = localStorage.getItem(this.storageKey(key));
@@ -37,12 +42,28 @@ class WebStorageAdapter implements StorageAdapter {
   }
 
   async clear(): Promise<void> {
-    const keys: string[] = [];
+    const scopedPrefix = `${STORAGE_PREFIX}${this.accountNamespace}.`;
+    const globalKeys = new Set(GLOBAL_DATA_KEYS.map((key) => `${STORAGE_PREFIX}${key}`));
+    const legacyKeys = new Set(ACCOUNT_DATA_KEYS.map((key) => `${STORAGE_PREFIX}${key}`));
+    const changedKeys = new Set<string>();
+    const storedKeys: string[] = [];
     for (let index = 0; index < localStorage.length; index += 1) {
       const key = localStorage.key(index);
-      if (key?.startsWith(STORAGE_PREFIX)) keys.push(key.slice(STORAGE_PREFIX.length));
+      if (key) storedKeys.push(key);
     }
-    for (const key of keys) await this.remove(key);
+    for (const key of storedKeys) {
+      if (key.startsWith(scopedPrefix)) {
+        changedKeys.add(key.slice(scopedPrefix.length));
+        localStorage.removeItem(key);
+      } else if (globalKeys.has(key)) {
+        changedKeys.add(key.slice(STORAGE_PREFIX.length));
+        localStorage.removeItem(key);
+      } else if (legacyKeys.has(key)) {
+        changedKeys.add(key.slice(STORAGE_PREFIX.length));
+        localStorage.removeItem(key);
+      }
+    }
+    changedKeys.forEach((key) => this.notify(key));
   }
 
   watch<T>(key: string, listener: (value: T | undefined) => void): () => void {
@@ -50,8 +71,10 @@ class WebStorageAdapter implements StorageAdapter {
       window.addEventListener("storage", (event) => {
         if (event.key === null) {
           this.listeners.forEach((_listeners, changedKey) => this.notify(changedKey));
-        } else if (event.key.startsWith(STORAGE_PREFIX)) {
-          this.notify(event.key.slice(STORAGE_PREFIX.length));
+        } else {
+          this.listeners.forEach((_listeners, watchedKey) => {
+            if (event.key === this.storageKey(watchedKey)) this.notify(watchedKey);
+          });
         }
       });
       this.listeningForStorageChanges = true;
@@ -67,7 +90,28 @@ class WebStorageAdapter implements StorageAdapter {
   }
 
   private storageKey(key: string): string {
-    return `${STORAGE_PREFIX}${key}`;
+    if ((GLOBAL_DATA_KEYS as readonly string[]).includes(key)) return `${STORAGE_PREFIX}${key}`;
+    return `${STORAGE_PREFIX}${this.accountNamespace}.${key}`;
+  }
+
+  setAccountNamespace(username: string | null): void {
+    const next = username ? `account-${encodeURIComponent(username)}` : "guest";
+    if (next === this.accountNamespace) return;
+    if (username && this.accountNamespace === "guest") this.migrateLegacyData(next);
+    this.accountNamespace = next;
+    ACCOUNT_DATA_KEYS.forEach((key) => this.notify(key));
+  }
+
+  private migrateLegacyData(namespace: string): void {
+    for (const key of ACCOUNT_DATA_KEYS) {
+      const legacyKey = `${STORAGE_PREFIX}${key}`;
+      const scopedKey = `${STORAGE_PREFIX}${namespace}.${key}`;
+      const legacyValue = localStorage.getItem(legacyKey);
+      if (legacyValue !== null && localStorage.getItem(scopedKey) === null) {
+        localStorage.setItem(scopedKey, legacyValue);
+      }
+      if (legacyValue !== null) localStorage.removeItem(legacyKey);
+    }
   }
 
   private read<T>(key: string): T | undefined {
@@ -86,10 +130,10 @@ class WebMessagingAdapter implements MessagingAdapter {
   async send<TResponse>(message: ExtensionMessage): Promise<TResponse> {
     switch (message.type) {
       case "assistant:settings-open":
-        window.dispatchEvent(new Event("frox:web-settings"));
+        window.dispatchEvent(new Event("tex:web-settings"));
         return undefined as TResponse;
       case "assistant:widget-open":
-        window.dispatchEvent(new Event("frox-widget-open"));
+        window.dispatchEvent(new Event("tex-widget-open"));
         return undefined as TResponse;
       case "assistant:settings-get":
         return await this.storage.get<AssistantSettings>(SETTINGS_KEY) as TResponse;
@@ -190,6 +234,10 @@ class WebHotkeyAdapter implements HotkeyAdapter {
 }
 
 const storage = new WebStorageAdapter();
+
+export function setWebAccountNamespace(username: string | null): void {
+  storage.setAccountNamespace(username);
+}
 
 export const webPlatform: PlatformAdapter = {
   storage,

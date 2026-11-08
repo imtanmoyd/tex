@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from frox_engine.memory import (
+from tex_engine.memory import (
     MemoryConflictError,
     MemoryStore,
     extract_fact_candidates,

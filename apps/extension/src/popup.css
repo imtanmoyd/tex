@@ -17,4 +17,4 @@ button:focus-visible { outline: 2px solid #71d7e8; outline-offset: 2px; }
 .popup-primary:disabled,.popup-toggle:disabled { opacity: .48; cursor: not-allowed; }
 .popup-settings { background: transparent; color: #c1bdcd; }
 .popup button:hover:not(:disabled) { filter: brightness(1.12); }
-.frox-crash { margin: 14px; padding: 12px; border: 1px solid #f88; border-radius: 12px; background: #24151a; color: #fff; }
+.tex-crash { margin: 14px; padding: 12px; border: 1px solid #f88; border-radius: 12px; background: #24151a; color: #fff; }

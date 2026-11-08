@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Frox AI Assistant",
+  "name": "Tex AI Assistant",
   "version": "0.1.0",
   "description": "A reusable, voice-first AI assistant that lives in your browser.",
   "content_security_policy": {
@@ -17,7 +17,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Frox AI Assistant",
+    "default_title": "Tex AI Assistant",
     "default_popup": "popup.html"
   },
   "options_page": "options.html",
@@ -32,7 +32,7 @@
   "content_scripts": [
     {
       "js": [
-        "assets/content.tsx-loader-kXuy5vL2.js"
+        "assets/content.tsx-loader-COdT9wGj.js"
       ],
       "matches": [
         "<all_urls>"
@@ -46,8 +46,9 @@
         "<all_urls>"
       ],
       "resources": [
-        "assets/platform-DTWeNvaP.js",
-        "assets/content.tsx-CpUcs2Q9.js"
+        "assets/platform-BVA0yu8J.js",
+        "assets/conversation-n14NSsIT.js",
+        "assets/content.tsx-AKGb7wrg.js"
       ],
       "use_dynamic_url": false
     }

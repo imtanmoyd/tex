@@ -4,7 +4,7 @@ import type {
   MessagingAdapter,
   PlatformAdapter,
   StorageAdapter
-} from "@frox/core";
+} from "@tex/core";
 
 class ChromeStorageAdapter implements StorageAdapter {
   async get<T>(key: string): Promise<T | undefined> {

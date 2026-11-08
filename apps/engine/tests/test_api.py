@@ -7,10 +7,10 @@ import json
 import httpx
 import pytest
 
-from frox_engine.app import create_app
-from frox_engine.config import EngineSettings
-from frox_engine.memory import MemoryStore
-from frox_engine.providers import ProviderRouter
+from tex_engine.app import create_app
+from tex_engine.config import EngineSettings
+from tex_engine.memory import MemoryStore
+from tex_engine.providers import ProviderRouter
 
 EXTENSION_ID = "a" * 32
 EXTENSION_ORIGIN = f"chrome-extension://{EXTENSION_ID}"
@@ -75,13 +75,13 @@ async def test_cors_preflight_allows_only_the_configured_extension_headers(
         headers={
             "Origin": EXTENSION_ORIGIN,
             "Access-Control-Request-Method": "GET",
-            "Access-Control-Request-Headers": "x-frox-token",
+            "Access-Control-Request-Headers": "x-tex-token",
         },
     )
 
     assert response.status_code == 200
     assert response.headers["access-control-allow-origin"] == EXTENSION_ORIGIN
-    assert "x-frox-token" in response.headers["access-control-allow-headers"].lower()
+    assert "x-tex-token" in response.headers["access-control-allow-headers"].lower()
 
 
 @pytest.mark.anyio
@@ -93,11 +93,11 @@ async def test_protected_routes_require_the_startup_token(
     assert (await test_client.get("/health")).status_code == 401
     assert (await test_client.get(
         "/health",
-        headers={"X-Frox-Token": "incorrect"},
+        headers={"X-Tex-Token": "incorrect"},
     )).status_code == 401
     assert (await test_client.get(
         "/health",
-        headers={"X-Frox-Token": token},
+        headers={"X-Tex-Token": token},
     )).json() == {"status": "ok"}
 
 
@@ -108,7 +108,7 @@ async def test_chat_is_an_explicit_sse_error_when_no_provider_is_configured(
     test_client, token = client
     response = await test_client.post(
         "/chat",
-        headers={"X-Frox-Token": token},
+        headers={"X-Tex-Token": token},
         json={"messages": [{"role": "user", "content": "Hello"}]},
     )
 
@@ -155,7 +155,7 @@ async def test_chat_streams_provider_events(tmp_path) -> None:
         ) as test_client:
             response = await test_client.post(
                 "/chat",
-                headers={"X-Frox-Token": app.state.startup_token},
+                headers={"X-Tex-Token": app.state.startup_token},
                 json={
                     "messages": [
                         {"role": "system", "content": "Keep replies brief."},
@@ -217,7 +217,7 @@ async def test_chat_injects_local_recall_and_saves_completed_conversation(tmp_pa
         ) as test_client:
             response = await test_client.post(
                 "/chat",
-                headers={"X-Frox-Token": app.state.startup_token},
+                headers={"X-Tex-Token": app.state.startup_token},
                 json={
                     "conversationId": "conversation-1",
                     "siteHost": "docs.python.org",
@@ -268,7 +268,7 @@ async def test_provider_status_is_authenticated_and_hides_secrets(tmp_path) -> N
             unauthorized = await test_client.get("/providers/status")
             authorized = await test_client.get(
                 "/providers/status",
-                headers={"X-Frox-Token": app.state.startup_token},
+                headers={"X-Tex-Token": app.state.startup_token},
             )
 
     assert unauthorized.status_code == 401
@@ -282,7 +282,7 @@ async def test_memory_routes_support_crud_export_and_forget_everything(
     client: tuple[httpx.AsyncClient, str],
 ) -> None:
     test_client, token = client
-    headers = {"X-Frox-Token": token}
+    headers = {"X-Tex-Token": token}
     created = await test_client.post(
         "/memory",
         headers=headers,
@@ -309,7 +309,7 @@ async def test_memory_routes_support_crud_export_and_forget_everything(
 
     exported = await test_client.get("/memory/export", headers=headers)
     assert exported.status_code == 200
-    assert exported.headers["content-disposition"].endswith("frox-memory-export.json\"")
+    assert exported.headers["content-disposition"].endswith("tex-memory-export.json\"")
     assert exported.json()["facts"][0]["content"] == "I prefer Python tests."
 
     deleted = await test_client.delete(f"/memory/{memory_id}", headers=headers)
@@ -339,7 +339,7 @@ async def test_memory_api_rejects_invalid_site_hosts_and_site_scoped_facts(
     client: tuple[httpx.AsyncClient, str],
 ) -> None:
     test_client, token = client
-    headers = {"X-Frox-Token": token}
+    headers = {"X-Tex-Token": token}
 
     invalid_note = await test_client.post(
         "/memory",
@@ -377,7 +377,7 @@ async def test_settings_does_not_expose_startup_token(
     test_client, token = client
     response = await test_client.get(
         "/settings",
-        headers={"X-Frox-Token": token},
+        headers={"X-Tex-Token": token},
     )
 
     assert response.status_code == 200
@@ -397,5 +397,5 @@ def test_engine_refuses_to_start_without_an_extension_id() -> None:
         async with app.router.lifespan_context(app):
             pass
 
-    with pytest.raises(RuntimeError, match="FROX_EXTENSION_ID"):
+    with pytest.raises(RuntimeError, match="TEX_EXTENSION_ID"):
         asyncio.run(start_without_extension_id())

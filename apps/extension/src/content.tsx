@@ -1,9 +1,9 @@
 import { createRoot } from "react-dom/client";
-import { Widget, WidgetErrorBoundary } from "@frox/ui";
+import { Widget, WidgetErrorBoundary } from "@tex/ui";
 import widgetStyles from "../../../packages/ui/src/widget.css?inline";
 import { extensionPlatform } from "./platform";
 
-const HOST_ID = "frox-assistant-host";
+const HOST_ID = "tex-assistant-host";
 const DISABLED_SITES_KEY = "assistant:settings";
 let host: HTMLDivElement | null = null;
 let root: ReturnType<typeof createRoot> | null = null;
@@ -28,7 +28,7 @@ async function startWidget(generation = mountGeneration): Promise<void> {
 
   const widgetHost = document.createElement("div");
   widgetHost.id = HOST_ID;
-  widgetHost.setAttribute("aria-label", "Frox AI assistant");
+  widgetHost.setAttribute("aria-label", "Tex AI assistant");
   widgetHost.style.cssText = "all:initial;position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:2147483647;contain:layout style;";
   document.documentElement.appendChild(widgetHost);
   host = widgetHost;
@@ -38,7 +38,7 @@ async function startWidget(generation = mountGeneration): Promise<void> {
   style.textContent = widgetStyles;
   shadow.appendChild(style);
   const mount = document.createElement("div");
-  mount.id = "frox-widget-root";
+  mount.id = "tex-widget-root";
   shadow.appendChild(mount);
   const widgetRoot = createRoot(mount);
   root = widgetRoot;
@@ -72,8 +72,8 @@ chrome.runtime.onMessage.addListener((message: { type?: string }) => {
     void startWidget(mountGeneration).catch(logStartError);
   }
   if (message.type === "assistant:widget-open") {
-    if (!host) void startWidget(mountGeneration).then(() => window.dispatchEvent(new CustomEvent("frox-widget-open"))).catch(logStartError);
-    else window.dispatchEvent(new CustomEvent("frox-widget-open"));
+    if (!host) void startWidget(mountGeneration).then(() => window.dispatchEvent(new CustomEvent("tex-widget-open"))).catch(logStartError);
+    else window.dispatchEvent(new CustomEvent("tex-widget-open"));
   }
 });
 

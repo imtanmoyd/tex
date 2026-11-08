@@ -11,7 +11,7 @@
     "engine": {
       "root": "apps/engine",
       "framework": "fastapi",
-      "entrypoint": "src/frox_engine/app.py"
+      "entrypoint": "src/tex_engine/app.py"
     }
   },
   "rewrites": [

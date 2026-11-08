@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
-import type { AssistantSettings } from "@frox/core";
-import { WidgetErrorBoundary } from "@frox/ui";
+import type { AssistantSettings } from "@tex/core";
+import { API_PRESETS } from "@tex/core";
+import { WidgetErrorBoundary } from "@tex/ui";
 import { extensionPlatform } from "./platform";
 import "./options.css";
 
@@ -12,11 +13,12 @@ interface Response<T> {
 }
 
 const DEFAULT_SETTINGS: AssistantSettings = {
+  apiProvider: "gemini",
   provider: "openai",
   apiKey: "",
   hasApiKey: false,
-  model: "gpt-4o-mini",
-  baseUrl: "https://api.openai.com/v1",
+  model: "gemini-2.5-flash",
+  baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
   theme: "dark",
   skin: "nova",
   hotkey: "Alt+Shift+F",
@@ -73,17 +75,15 @@ function SettingsPage() {
     setSaved(false);
   };
 
-  const changeProvider = (provider: AssistantSettings["provider"]) => {
+  const selectProvider = (next: AssistantSettings["apiProvider"]) => {
     setSettings((current) => {
-      const oldBase = current.provider === "anthropic" ? "https://api.anthropic.com" : "https://api.openai.com/v1";
-      const oldModel = current.provider === "anthropic" ? "claude-3-5-sonnet-latest" : "gpt-4o-mini";
-      const newBase = provider === "anthropic" ? "https://api.anthropic.com" : "https://api.openai.com/v1";
-      const newModel = provider === "anthropic" ? "claude-3-5-sonnet-latest" : "gpt-4o-mini";
+      const preset = API_PRESETS[next];
       return {
         ...current,
-        provider,
-        baseUrl: current.baseUrl === oldBase ? newBase : current.baseUrl,
-        model: current.model === oldModel ? newModel : current.model
+        apiProvider: next,
+        provider: preset.provider,
+        baseUrl: next === "custom" ? current.baseUrl : preset.baseUrl,
+        model: next === "custom" ? current.model : preset.model
       };
     });
     setSaved(false);
@@ -118,7 +118,7 @@ function SettingsPage() {
   };
 
   const clearData = async () => {
-    if (!window.confirm("Clear all Frox settings, API keys, conversations, position, and error logs? This cannot be undone.")) return;
+    if (!window.confirm("Clear all Tex settings, API keys, conversations, position, and error logs? This cannot be undone.")) return;
     try {
       const response = await extensionPlatform.messaging.send<Response<null>>({ type: "assistant:clear-data" });
       if (!response.ok) {
@@ -129,7 +129,7 @@ function SettingsPage() {
       setKeyInput("");
       setSiteList("");
       setErrors([]);
-      setStatus("All Frox data has been cleared.");
+      setStatus("All Tex data has been cleared.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error));
     }
@@ -156,16 +156,17 @@ function SettingsPage() {
   return <main className="options-page">
     <header className="options-header">
       <span className="options-orb" />
-      <div><p className="options-eyebrow">PERSONAL AI COMPANION</p><h1>Frox settings</h1></div>
+      <div><p className="options-eyebrow">PERSONAL AI COMPANION</p><h1>Tex settings</h1></div>
     </header>
     <p className="options-intro">Tune your assistant. Your provider key stays in extension storage and is used only by the background service worker.</p>
     <form onSubmit={(event) => void save(event)}>
       <section className="settings-card">
         <div className="card-heading"><div><h2>AI provider</h2><p>Connect an API-compatible model. Ollama works with its local OpenAI-compatible endpoint and needs no key.</p></div><span className={settings.hasApiKey ? "status-dot connected" : "status-dot"} /></div>
-        <label>Provider
-          <select value={settings.provider} onChange={(event) => changeProvider(event.target.value as AssistantSettings["provider"])}>
-            <option value="openai">OpenAI-compatible</option>
-            <option value="anthropic">Anthropic</option>
+        <label>API provider
+          <select value={settings.apiProvider} onChange={(event) => selectProvider(event.target.value as AssistantSettings["apiProvider"])}>
+            <option value="gemini">Gemini</option>
+            <option value="openrouter">OpenRouter</option>
+            <option value="custom">Custom</option>
           </select>
         </label>
         <label>Model
@@ -216,7 +217,7 @@ function SettingsPage() {
       {errors.length === 0 ? <p className="empty-errors">No errors recorded.</p> : <ul>{errors.map((error, index) => <li key={`${error.timestamp}-${index}`}><time>{new Date(error.timestamp).toLocaleString()}</time><pre>{error.message}{error.stack ? `\n${error.stack}` : ""}</pre></li>)}</ul>}
       <button className="danger-button" type="button" onClick={() => void clearData()}>Clear all assistant data</button>
     </section>
-    <footer className="options-footer">Frox · Runs locally in your browser</footer>
+    <footer className="options-footer">Tex · Runs locally in your browser</footer>
   </main>;
 }
 
@@ -340,7 +341,7 @@ function MemoryPanel() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "frox-memory-export.json";
+      link.download = "tex-memory-export.json";
       link.click();
       window.setTimeout(() => URL.revokeObjectURL(url), 0);
       setStatus("Local memory export downloaded.");
@@ -510,7 +511,7 @@ function VoicePage() {
   };
 
   return <main className="voice-page">
-    <header className="voice-header"><span className="options-orb" /><div><p className="options-eyebrow">FROX VOICE</p><h1>Talk it out</h1></div></header>
+    <header className="voice-header"><span className="options-orb" /><div><p className="options-eyebrow">TEX VOICE</p><h1>Talk it out</h1></div></header>
     <p className="voice-copy">Microphone access is requested only after you press start. Audio levels stay in this extension page; speech recognition can be connected as a separate engine.</p>
     <div className={`voice-orb ${active ? "is-active" : ""}`} aria-hidden="true"><div className="voice-bars" ref={bars}>{Array.from({ length: 24 }, (_, index) => <i key={index} />)}</div></div>
     <p className="voice-status" role="status">{status}</p>

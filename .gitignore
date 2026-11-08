@@ -3,3 +3,7 @@ dist/
 web-dist/
 .vercel/
 *.tsbuildinfo
+api/data/
+.env
+.env.*
+!.env.example

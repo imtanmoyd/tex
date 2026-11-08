@@ -1,4 +1,4 @@
-# Frox desktop shell
+# Tex desktop shell
 
 This folder is the future Electron host; it is intentionally not an installable
 desktop application yet. The reusable UI and application logic already live in

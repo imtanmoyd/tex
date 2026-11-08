@@ -1,0 +1,7 @@
+{
+    "python.terminal.useEnvFile": true,
+    "python.defaultInterpreterPath": "${workspaceFolder}/apps/engine/.venv",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/apps/engine/src"
+    ]
+}

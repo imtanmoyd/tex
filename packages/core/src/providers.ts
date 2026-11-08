@@ -1,4 +1,4 @@
-import type { LLMMessage, ProviderName, StreamOptions } from "./types";
+import type { ApiProvider, AssistantSettings, LLMMessage, ProviderName, StreamOptions } from "./types";
 
 export interface LLMProvider {
   stream(messages: LLMMessage[], options: StreamOptions): AsyncIterable<string>;
@@ -116,4 +116,26 @@ export class AnthropicProvider implements LLMProvider {
 
 export function createProvider(provider: ProviderName): LLMProvider {
   return provider === "anthropic" ? new AnthropicProvider() : new OpenAICompatibleProvider();
+}
+
+export const API_PRESETS: Record<ApiProvider, { provider: ProviderName; baseUrl: string; model: string }> = {
+  gemini: { provider: "openai", baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-2.5-flash" },
+  openrouter: { provider: "openai", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o-mini" },
+  custom: { provider: "openai", baseUrl: "", model: "" }
+};
+
+export function defaultSettingsForApiProvider(apiProvider: ApiProvider): AssistantSettings {
+  const preset = API_PRESETS[apiProvider];
+  return {
+    apiProvider,
+    provider: preset.provider,
+    apiKey: "",
+    hasApiKey: false,
+    model: preset.model,
+    baseUrl: preset.baseUrl,
+    theme: "dark",
+    skin: "nova",
+    hotkey: "Alt+Shift+F",
+    disabledSites: []
+  };
 }

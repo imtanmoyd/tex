@@ -33,6 +33,30 @@ afterEach(() => {
 });
 
 describe("web platform chat", () => {
+  it("isolates browser chat data by signed-in account", async () => {
+    const localStorage = new MemoryStorage();
+    vi.stubGlobal("localStorage", localStorage);
+    const { setWebAccountNamespace, webPlatform } = await import("./platform");
+    const legacyThreads = [{ id: "legacy" }];
+    localStorage.setItem("tex.web.assistant:threads", JSON.stringify(legacyThreads));
+
+    setWebAccountNamespace("alice");
+    expect(await webPlatform.storage.get("assistant:threads")).toEqual(legacyThreads);
+    await webPlatform.storage.set("assistant:threads", [{ id: "alice" }]);
+    await webPlatform.storage.set("assistant:position", { x: 1, y: 2 });
+
+    setWebAccountNamespace("bob");
+    expect(await webPlatform.storage.get("assistant:threads")).toBeUndefined();
+    expect(await webPlatform.storage.get("assistant:position")).toEqual({ x: 1, y: 2 });
+    await webPlatform.storage.set("assistant:threads", [{ id: "bob" }]);
+    await webPlatform.storage.clear();
+    expect(await webPlatform.storage.get("assistant:threads")).toBeUndefined();
+
+    setWebAccountNamespace("alice");
+    expect(await webPlatform.storage.get("assistant:threads")).toEqual([{ id: "alice" }]);
+    setWebAccountNamespace(null);
+  });
+
   it("streams concise chat directly to the configured provider and persists settings locally", async () => {
     const localStorage = new MemoryStorage();
     vi.stubGlobal("localStorage", localStorage);
@@ -57,6 +81,7 @@ describe("web platform chat", () => {
     vi.stubGlobal("fetch", fetchMock);
     const { webPlatform } = await import("./platform");
     const settings = {
+      apiProvider: "custom" as const,
       provider: "openai" as const,
       apiKey: "test-provider-key",
       model: "test-model",

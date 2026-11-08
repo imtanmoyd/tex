@@ -163,7 +163,7 @@ async function fetchAuthenticated(
 ): Promise<Response> {
   const token = await getStartupToken(signal, fetcher);
   const headers = new Headers(init.headers);
-  headers.set("X-Frox-Token", token);
+  headers.set("X-Tex-Token", token);
   try {
     return await fetcher(`${ENGINE_BASE_URL}${path}`, {
       ...init,
@@ -206,7 +206,7 @@ async function getStartupToken(signal: AbortSignal, fetcher: Fetcher): Promise<s
 async function responseError(response: Response): Promise<EngineRequestError> {
   if (response.status === 403) {
     return new EngineRequestError(
-      "The local engine rejected this extension origin. Check FROX_EXTENSION_ID.",
+      "The local engine rejected this extension origin. Check TEX_EXTENSION_ID.",
       response.status
     );
   }

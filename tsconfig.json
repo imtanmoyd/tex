@@ -12,10 +12,10 @@
     "resolveJsonModule": true,
     "types": ["chrome", "vite/client", "node"],
     "paths": {
-      "@frox/core": ["./packages/core/src/index.ts"],
-      "@frox/core/*": ["./packages/core/src/*"],
-      "@frox/ui": ["./packages/ui/src/index.ts"],
-      "@frox/ui/*": ["./packages/ui/src/*"]
+      "@tex/core": ["./packages/core/src/index.ts"],
+      "@tex/core/*": ["./packages/core/src/*"],
+      "@tex/ui": ["./packages/ui/src/index.ts"],
+      "@tex/ui/*": ["./packages/ui/src/*"]
     }
   },
   "include": ["packages/**/*.ts", "packages/**/*.tsx", "apps/**/*.ts", "apps/**/*.tsx"],

@@ -1,0 +1,14 @@
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mD:/Projects/frox[39m
+
+ [32m✓[39m packages/core/src/conversation.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 3[2mms[22m[39m
+ [32m✓[39m packages/core/src/providers.test.ts [2m([22m[2m2 tests[22m[2m)[22m[90m 10[2mms[22m[39m
+ [32m✓[39m packages/core/src/store.test.ts [2m([22m[2m4 tests[22m[2m)[22m[90m 6[2mms[22m[39m
+ [32m✓[39m apps/extension/src/engine.test.ts [2m([22m[2m5 tests[22m[2m)[22m[90m 12[2mms[22m[39m
+ [32m✓[39m apps/web/src/platform.test.ts [2m([22m[2m1 test[22m[2m)[22m[90m 109[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m   Start at [22m 10:13:20
+[2m   Duration [22m 503ms[2m (transform 287ms, setup 0ms, collect 370ms, tests 140ms, environment 1ms, prepare 536ms)[22m
+

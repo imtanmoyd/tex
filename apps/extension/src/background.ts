@@ -1,5 +1,5 @@
-import { createProvider, MAX_CHAT_OUTPUT_TOKENS } from "@frox/core";
-import type { AssistantSettings, LLMContentPart, LLMMessage, SkinName } from "@frox/core";
+import { createProvider, MAX_CHAT_OUTPUT_TOKENS } from "@tex/core";
+import type { AssistantSettings, LLMContentPart, LLMMessage, ProviderName, SkinName } from "@tex/core";
 import {
   getEngineStatus,
   isEngineUnavailable,
@@ -13,11 +13,12 @@ const SECRET_KEY = "assistant:provider-key";
 const ERROR_LOG_KEY = "assistant:errors";
 
 const DEFAULT_SETTINGS: AssistantSettings = {
+  apiProvider: "gemini",
   provider: "openai",
   apiKey: "",
   hasApiKey: false,
-  model: "gpt-4o-mini",
-  baseUrl: "https://api.openai.com/v1",
+  model: "gemini-2.5-flash",
+  baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
   theme: "dark",
   skin: "nova",
   hotkey: "Alt+Shift+F",
@@ -48,6 +49,14 @@ async function loadSettings(includeSecret = false): Promise<AssistantSettings> {
       ? partial.disabledSites.filter((site): site is string => typeof site === "string")
       : []
   };
+  const storedApiProvider = partial.apiProvider === "gemini" || partial.apiProvider === "openrouter" || partial.apiProvider === "custom"
+    ? partial.apiProvider
+    : "gemini";
+  const presetProvider: ProviderName = storedApiProvider === "custom" && typeof partial.provider === "string"
+    ? (partial.provider === "anthropic" ? "anthropic" : "openai")
+    : "openai";
+  settings.apiProvider = storedApiProvider;
+  settings.provider = presetProvider;
   settings.hasApiKey = Boolean(apiKey);
   settings.apiKey = includeSecret ? apiKey : "";
   return settings;
@@ -57,11 +66,15 @@ async function saveSettings(value: unknown): Promise<AssistantSettings> {
   if (!isRecord(value)) throw new Error("Settings payload must be an object.");
   const current = await loadSettings(true);
   const provider = value.provider === "anthropic" ? "anthropic" : value.provider === "openai" ? "openai" : current.provider;
+  const apiProvider = value.apiProvider === "gemini" || value.apiProvider === "openrouter" || value.apiProvider === "custom"
+    ? value.apiProvider
+    : current.apiProvider;
   const theme = value.theme === "light" ? "light" : value.theme === "dark" ? "dark" : current.theme;
   const skin = isSkinName(value.skin) ? value.skin : current.skin;
   const next: AssistantSettings = {
     ...current,
     provider,
+    apiProvider,
     theme,
     skin,
     model: typeof value.model === "string" && value.model.trim() ? value.model.trim() : current.model,
@@ -126,7 +139,7 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) =>
     "assistant:memory-forget"
   ];
   if (privilegedTypes.includes(message.type) && !sender.url?.startsWith(chrome.runtime.getURL(""))) {
-    sendResponse({ ok: false, error: "This operation is available only in Frox extension pages." });
+    sendResponse({ ok: false, error: "This operation is available only in Tex extension pages." });
     return true;
   }
   const respond = async (operation: () => Promise<unknown>) => {

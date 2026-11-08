@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { WidgetErrorBoundary } from "@frox/ui";
+import { WidgetErrorBoundary } from "@tex/ui";
 import { extensionPlatform } from "./platform";
 import "./popup.css";
 
@@ -106,7 +106,7 @@ function Popup() {
   };
 
   return <main className="popup">
-    <header className="popup-header"><span className="popup-orb" /><div><strong>frox</strong><small>AI companion</small></div></header>
+    <header className="popup-header"><span className="popup-orb" /><div><strong>tex</strong><small>AI companion</small></div></header>
     <p className="popup-site" title={hostname}>{hostname || "Current tab"}</p>
     <p className="popup-message" role="status">{message}</p>
     <p className="popup-engine-status" role="status">{engineMessage}</p>

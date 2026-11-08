@@ -1,6 +1,7 @@
 {
-  "name": "frox-assistant",
+  "name": "tex-assistant",
   "private": true,
+  "type": "module",
   "version": "0.1.0",
   "workspaces": [
     "packages/*",

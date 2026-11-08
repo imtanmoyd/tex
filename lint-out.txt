@@ -1,0 +1,12 @@
+
+D:\Projects\frox\apps\web\src\AuthPanel.tsx
+  24:14  error  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Projects\frox\apps\web\src\WebSettings.tsx
+  122:9  error  'preset' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Projects\frox\packages\core\src\auth.ts
+  5:7  error  'CODE_LENGTH' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 3 problems (3 errors, 0 warnings)
+

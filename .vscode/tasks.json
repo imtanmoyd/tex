@@ -2,7 +2,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Build Frox extension",
+			"label": "Build Tex extension",
 			"type": "shell",
 			"command": "npm",
 			"args": [

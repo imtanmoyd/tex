@@ -2,33 +2,21 @@
 
 | Feature | Status |
 |---|---|
-| MV3 monorepo and build scaffold | done |
-| Platform adapters for extension storage, messaging, and hotkeys | done |
-| Shadow DOM animated bot, top-frame guard, restricted-page skips | done |
-| Floating pet overlay, contextual speech bubble, and animated action quick swap | done (6 actions + random) |
-| Dragging, edge snapping, and persisted position | done |
+| MV3 monorepo, platform adapters, top-frame Shadow DOM overlay | done |
+| Animated pet, moods/actions, drag/snap, saved position, reduced motion | done |
 | Multi-thread chat, storage, markdown, attachments, stop/regenerate | done |
 | Direct OpenAI-compatible and Anthropic streaming | done |
-| Voice UI, user-triggered microphone capture and local level meter | done |
-| Voice transcription and speech playback | planned |
-| Settings, site blocklist, themes/skins, crash log, reset/clear | done |
-| Popup site toggle and open-chat/settings controls | done |
-| Desktop-shell architecture placeholder (Electron app itself not implemented) | done |
-| Responsive Vite website with shared animated bot, browser-local multi-chat, BYOK settings, and Vercel build | done |
-| Vercel multi-service project config (public Vite app, internal FastAPI engine) | done |
-| Core/engine tests, lint, typecheck, and MV3 build | done |
-| Python 3.11 FastAPI loopback engine skeleton | done |
-| Startup token, extension-origin bootstrap, and strict CORS | done |
-| Authenticated health/settings and SSE chat route | done |
-| Authenticated SQLite memory API (CRUD/export/forget) | done |
-| SQLite FTS5 keyword recall and conservative local fact extraction | done |
-| Extension ↔ engine text-chat bridge and Mode A fallback | done |
-| Popup engine status and Settings memory viewer | done |
-| Engine OpenRouter/Groq/Google/Ollama provider adapters | done |
-| Ordered fallback, capped retries, 429 backoff, rotating model lists | done |
-| Key-free `/providers/status` endpoint | done |
-| SQLite/FTS5 memory and memory controls | done |
-| Vector/embedding semantic recall | planned (dependency approval required) |
-| Private site awareness and proactive suggestions | planned |
-| Offline Whisper/Piper voice | planned |
-| Engine packaging and desktop child-process launcher | planned |
+| Popup, options, provider settings, site blocklist, local crash log | done |
+| Web landing page, interactive chat, responsive design, desktop coming-soon | done |
+| Web Gemini / OpenRouter / Custom provider selector | done |
+| Web signup/login with Redis, scrypt, rate limits, secure cookie sessions | done; requires Vercel secrets |
+| Email-code password reset with atomic one-time use | done; requires Resend configuration |
+| Account-based chat/settings sync across devices | planned |
+| Vercel Vite public app and internal local-engine service configuration | done; external account setup/deploy unverified |
+| FastAPI local engine, provider fallbacks, SQLite/FTS5 memory, extension bridge | done |
+| Nisa-inspired responsive hero/orb and responsive auth/reset dialog | done; 320px and desktop browser checks |
+| Semantic vector recall, page awareness, proactive suggestions | planned |
+| Speech transcription, speech synthesis, engine packaging | planned |
+| Electron desktop runtime and launcher | planned |
+| Automated engine tests | done |
+| Automated UI/core/auth-route tests (22), typecheck, lint, web/extension production builds | done |

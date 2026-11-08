@@ -5,8 +5,8 @@ import json
 import httpx
 import pytest
 
-from frox_engine.config import EngineSettings
-from frox_engine.providers import ProviderRouter
+from tex_engine.config import EngineSettings
+from tex_engine.providers import ProviderRouter
 
 
 @pytest.mark.anyio

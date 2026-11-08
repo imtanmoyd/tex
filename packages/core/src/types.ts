@@ -1,6 +1,7 @@
 export type AssistantState = "idle" | "hover" | "listening" | "thinking" | "speaking" | "sleeping" | "notification";
 export type ThemeName = "dark" | "light";
 export type ProviderName = "openai" | "anthropic";
+export type ApiProvider = "gemini" | "openrouter" | "custom";
 export type SkinName = "nova" | "mika" | "orbit" | "echo";
 
 export interface ChatMessage {
@@ -26,6 +27,7 @@ export interface WidgetPosition {
 }
 
 export interface AssistantSettings {
+  apiProvider: ApiProvider;
   provider: ProviderName;
   apiKey: string;
   hasApiKey?: boolean;

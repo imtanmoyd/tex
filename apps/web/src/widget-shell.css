@@ -9,7 +9,7 @@
   pointer-events: none;
 }
 
-.frox-web-settings-backdrop {
+.tex-web-settings-backdrop {
   position: fixed;
   z-index: 20;
   inset: 0;
@@ -18,10 +18,10 @@
   padding: 18px;
   background: #07070bd9;
   pointer-events: auto;
-  animation: frox-web-fade-in .18s ease-out both;
+  animation: tex-web-fade-in .18s ease-out both;
 }
 
-.frox-web-settings {
+.tex-web-settings {
   width: min(460px, 100%);
   max-height: min(680px, calc(100dvh - 36px));
   overflow: auto;
@@ -34,15 +34,15 @@
   font: 400 13px/1.5 Inter, "Segoe UI", system-ui, sans-serif;
 }
 
-.frox-web-settings header,
-.frox-web-settings-actions {
+.tex-web-settings header,
+.tex-web-settings-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.frox-web-settings header p {
+.tex-web-settings header p {
   margin: 0 0 3px;
   color: #b8aaff;
   font-size: 9px;
@@ -50,13 +50,13 @@
   letter-spacing: .13em;
 }
 
-.frox-web-settings h2 {
+.tex-web-settings h2 {
   margin: 0;
   font-size: 22px;
   letter-spacing: -.04em;
 }
 
-.frox-web-settings-close {
+.tex-web-settings-close {
   width: 42px;
   height: 42px;
   border: 1px solid #ffffff18 !important;
@@ -66,14 +66,14 @@
   font-size: 24px;
 }
 
-.frox-web-privacy,
-.frox-web-provider-note {
+.tex-web-privacy,
+.tex-web-provider-note {
   color: #aaa7b7;
   font-size: 11px;
   line-height: 1.65;
 }
 
-.frox-web-privacy {
+.tex-web-privacy {
   margin: 16px 0;
   padding: 12px;
   border: 1px solid #8e7ae52b;
@@ -81,12 +81,12 @@
   background: #9c87ff0b;
 }
 
-.frox-web-settings form {
+.tex-web-settings form {
   display: grid;
   gap: 12px;
 }
 
-.frox-web-settings label {
+.tex-web-settings label {
   display: grid;
   gap: 6px;
   color: #e8e5f1;
@@ -94,8 +94,8 @@
   font-weight: 600;
 }
 
-.frox-web-settings label input,
-.frox-web-settings label select {
+.tex-web-settings label input,
+.tex-web-settings label select {
   width: 100%;
   min-height: 44px;
   padding: 0 12px;
@@ -107,23 +107,23 @@
   font: inherit;
 }
 
-.frox-web-settings label input:focus,
-.frox-web-settings label select:focus {
+.tex-web-settings label input:focus,
+.tex-web-settings label select:focus {
   border-color: #9e8aff;
   box-shadow: 0 0 0 3px #a895ff20;
 }
 
-.frox-web-optional {
+.tex-web-optional {
   color: #9692a5;
   font-size: 10px;
   font-weight: 400;
 }
 
-.frox-web-provider-note { margin: 0; }
-.frox-web-settings-status { margin: 0; color: #a9f0d0; font-size: 11px; }
-.frox-web-settings-actions { margin-top: 4px; }
+.tex-web-provider-note { margin: 0; }
+.tex-web-settings-status { margin: 0; color: #a9f0d0; font-size: 11px; }
+.tex-web-settings-actions { margin-top: 4px; }
 
-.frox-web-settings-actions button {
+.tex-web-settings-actions button {
   min-height: 44px;
   padding: 0 14px;
   border: 1px solid #ffffff20 !important;
@@ -133,28 +133,127 @@
   font: 600 11px/1 Inter, "Segoe UI", system-ui, sans-serif;
 }
 
-.frox-web-settings-actions .frox-web-save {
+.tex-web-settings-actions .tex-web-save {
   border-color: transparent !important;
   background: linear-gradient(110deg, #aa93ff, #63c7d4) !important;
   color: #100e18;
 }
 
-.frox-web-settings-actions button:focus-visible,
-.frox-web-settings-close:focus-visible {
+.tex-web-settings-actions button:focus-visible,
+.tex-web-settings-close:focus-visible {
   outline: 2px solid #71d7e8;
   outline-offset: 3px;
 }
 
-@keyframes frox-web-fade-in {
+@keyframes tex-web-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
 @media (max-width: 420px) {
-  .frox-web-settings { padding: 18px; border-radius: 18px; }
-  .frox-web-settings-actions button { padding-inline: 10px; }
+  .tex-web-settings { padding: 18px; border-radius: 18px; }
+  .tex-web-settings-actions button { padding-inline: 10px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .frox-web-settings-backdrop { animation: none; }
+  .tex-web-settings-backdrop { animation: none; }
+}
+
+.tex-auth-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: #07070bd9;
+  pointer-events: auto;
+  animation: tex-web-fade-in .18s ease-out both;
+}
+
+.tex-auth-panel {
+  box-sizing: border-box;
+  width: min(420px, 100%);
+  max-height: calc(100dvh - 36px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid #ffffff20;
+  border-radius: 22px;
+  background: linear-gradient(155deg, #242230, #13131b 74%);
+  color: #f5f3ff;
+  box-shadow: 0 30px 90px #000b, 0 0 35px #a895ff20;
+  font: 400 13px/1.5 Inter, "Segoe UI", system-ui, sans-serif;
+}
+
+.tex-auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.tex-auth-header h2 { margin: 0; font-size: 22px; letter-spacing: -.04em; }
+
+.tex-auth-close {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ffffff18;
+  border-radius: 13px;
+  background: #ffffff08;
+  color: #fff;
+  font: inherit;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.tex-auth-close:hover { border-color: #b2a1ff80; }
+.tex-auth-intro { margin: 0 0 18px; color: #aaa7b7; font-size: 12px; line-height: 1.6; }
+.tex-auth-panel form { display: grid; gap: 12px; margin-bottom: 14px; }
+.tex-auth-panel label { display: grid; min-width: 0; gap: 6px; color: #e8e5f1; font-size: 11px; font-weight: 600; }
+
+.tex-auth-panel input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #ffffff19;
+  border-radius: 11px;
+  outline: none;
+  background: #0e0e15;
+  color: #f5f3ff;
+  font: inherit;
+}
+
+.tex-auth-panel input:focus { border-color: #9e8aff; box-shadow: 0 0 0 3px #a895ff20; }
+.tex-auth-error { margin: 0 0 10px; color: #ff7777; font-size: 11px; }
+.tex-auth-info { margin: 0 0 14px; color: #aaa7b7; font-size: 10px; line-height: 1.5; }
+
+.tex-auth-submit {
+  min-height: 44px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(110deg, #aa93ff, #63c7d4);
+  color: #100e18;
+  font: 600 11px Inter, "Segoe UI", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.tex-auth-submit:disabled { opacity: .6; cursor: not-allowed; }
+.tex-auth-hint,.tex-auth-link { margin: 0 0 14px; color: #aaa7b7; font-size: 11px; text-align: center; }
+.tex-auth-hint span,.tex-auth-link span { color: #b2a1ff; cursor: pointer; text-decoration: underline; text-decoration-style: dotted; }
+.tex-auth-hint span:hover,.tex-auth-link span:hover { color: #fff; }
+.tex-auth-hint span:focus-visible,.tex-auth-link span:focus-visible,.tex-auth-close:focus-visible,.tex-auth-submit:focus-visible {
+  outline: 2px solid #71d7e8;
+  outline-offset: 3px;
+}
+
+@media (max-width: 420px) {
+  .tex-auth-panel { padding: 20px; border-radius: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tex-auth-backdrop { animation: none; }
 }

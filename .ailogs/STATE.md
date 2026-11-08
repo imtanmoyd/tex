@@ -1,38 +1,35 @@
 # Project State
 
 ## Snapshot
-- Frox is a multi-target workspace: reusable `packages/core` and `packages/ui`, a public web app, an MV3 extension, and an optional local Python engine.
-- The website is an interactive product site, not a static-only landing page; it mounts the shared animated companion and multi-chat UI.
+- Tex is a shared web + Chrome assistant monorepo; the desktop app is a placeholder.
+- Reusable chat logic/UI: `packages/core`, `packages/ui`.
+- Hosts: `apps/web` (Vite/Vercel), `apps/extension` (MV3), `apps/engine` (local FastAPI), `apps/desktop` (planned).
+- Website is a dark, responsive landing page with an interactive Shadow DOM companion/chat and desktop-coming-soon banner.
 
 ## Works
-- `apps/web` is a Vite app with responsive landing page, Shadow DOM bot, chat threads, streaming, browser-local persistence, provider settings, and clear-data action.
-- Web BYOK streaming goes directly from the browser to the selected provider; Frox/Vercel does not receive messages or API keys. localStorage is not encrypted and is documented as such.
-- Shared chat uses a concise, emotionally considerate system instruction, sends up to 16 recent messages, and requests at most 512 output tokens in browser, extension, and local-engine provider paths.
-- Web settings include OpenAI-compatible presets for OpenAI, OpenRouter, Groq, Google AI Studio, and local Ollama, plus Anthropic.
-- Vercel root config declares a Vite `app` service and FastAPI `engine` service, with service-specific roots/builds. Only the app is publicly routed; the engine remains internal because its auth and SQLite are local-engine designs.
-- Shared widget UI, state, provider adapters, and platform interfaces live in `packages/`; Chrome-specific APIs remain in `apps/extension`.
-- MV3 extension, Mode A direct provider streaming, Mode B local-engine fallback, popup/options, and existing provider/memory routes remain intact.
-- FastAPI loopback engine with extension-origin token bootstrap, provider fallback, SQLite/FTS5 memory, and settings controls is present.
-- Electron host boundary is documented in `apps/desktop/README.md`; no Electron dependency/runtime has been added.
-- `npm test`: 13 passed; typecheck, lint, web production build, and MV3 production build pass. TypeScript aliases use explicit relative paths without deprecated `baseUrl`.
-- Production-site browser test used a mocked SSE provider response; chat rendered, survived reload, stored locally, and the landing CTA opened the widget. Responsive checks passed at 320, 360, 390, 768, 1024, and 1440px.
+- Web and extension share provider adapters, chat state, themes, and widget.
+- Web supports Gemini, OpenRouter, and custom provider settings; requests go directly from the browser to the chosen provider.
+- Web signup/login uses Vercel routes, Upstash Redis account storage, scrypt password hashes, and an HttpOnly signed session cookie.
+- Password reset uses one-time, hashed 6-digit codes in Redis and Resend delivery; it is unavailable until email settings are configured.
+- Chats, provider keys/settings, and memory remain in the visitor's browser, scoped by username; auth does not sync them between devices.
+- Vercel config routes public traffic to Vite; the FastAPI engine is internal and not a public cloud chat API.
+- Extension offers Shadow DOM overlay, settings, popup, direct-provider mode, and optional local-engine bridge.
+- Engine supports local FastAPI chat, provider fallback, and SQLite/FTS5 memory.
+- Engine remains independent of the public website and binds to loopback in local use.
 
-## Broken / Missing
-- Vercel account/repository authorization is still required to publish at `frox.vercel.app`; root multi-service configuration is checked in source, but no deployment was created from this workspace.
-- Live provider calls were not made. Direct browser chat requires a user's provider key (or reachable local Ollama) and provider CORS support.
-- Website voice is disabled; the extension's voice recognition/speech playback and engine packaging remain incomplete.
-- Page awareness, proactive suggestions, semantic vector recall, and desktop runtime/launcher remain unimplemented.
-- There is no root `LICENSE`; choose a license before claiming formal open-source reuse terms.
-- npm reported dependency audit advisories previously; they have not been investigated.
+## Known gaps
+- No live Vercel deployment or account credentials are available in this workspace.
+- Deployment auth needs Upstash and Resend secrets plus a verified sender domain.
+- Live provider/API email calls were not made; test these in a Vercel preview.
+- Web provider keys and chat history are browser-local, not encrypted or account-synced.
+- The Vercel CLI and deploy credentials are not available here, so no remote Vercel build/deployment was run.
+- Pylance is configured to use the engine venv/source path; its current language-server diagnostics still show unresolved installed imports, although the selected interpreter imports FastAPI/Pydantic and all 24 engine tests pass.
+- Desktop runtime, page awareness, semantic vector recall, speech-to-text, and text-to-speech are not implemented.
+- The GitHub repository slug/remote and local folder name may still contain the former project name; changing those requires repository/account or filesystem action.
 
-## Next
-1. Sign in to Vercel, connect the private `imtanmoyd/froxva` repo, and confirm the production domain `frox.vercel.app`.
-2. Manually load the latest `dist/` in Chrome and test using a user-configured provider.
-3. Keep browser chat keys local; add no server proxy without an explicit secret-handling design.
-4. Obtain approval before adding Electron, voice, or vector/embedding dependencies.
-
-## Current validation
-- Web: `npm run build:web`; Vercel multi-service JSON assertions passed (app and engine roots/frameworks, per-service build settings, app-only rewrite, valid engine entrypoint). Browser-tested preview with mocked provider (no real key/model call); verified responsive layout and chat persistence.
-- Extension: `npm run build:extension` passed.
-- Shared workspace: `npm run typecheck`, `npm run lint`, and `npm test` passed (13 tests); `tsconfig.json` no longer uses deprecated `baseUrl`.
-- Engine: `apps/engine/.venv/Scripts/python.exe -m pytest apps/engine/tests` — 24 passed, including system prompt forwarding, system-message exclusion from stored history, and output-token cap.
+## Verified
+- `npm run typecheck`, `npm run lint`, and `npm test`: pass; 22 tests.
+- `npm run build:web` and `npm run build:extension`: pass.
+- `apps\engine\.venv\Scripts\python.exe -m pytest apps\engine\tests`: pass; 24 tests.
+- Browser checked 320px auth/reset panel and desktop hero; local UI showed no horizontal overflow.
+- Use `npx vercel dev` with configured `.env.local` for API integration; Vite dev alone does not run auth endpoints.

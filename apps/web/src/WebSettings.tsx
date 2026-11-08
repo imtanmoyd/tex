@@ -1,44 +1,14 @@
 import { useEffect, useState, type FormEvent } from "react";
-import type { AssistantSettings, PlatformAdapter } from "@frox/core";
+import type { ApiProvider, AssistantSettings, PlatformAdapter } from "@tex/core";
+import { API_PRESETS, defaultSettingsForApiProvider } from "@tex/core";
+import { useAuth } from "./auth";
 
 const SETTINGS_KEY = "assistant:settings";
 
-const DEFAULT_SETTINGS: AssistantSettings = {
-  provider: "openai",
-  apiKey: "",
-  hasApiKey: false,
-  model: "gpt-4o-mini",
-  baseUrl: "https://api.openai.com/v1",
-  theme: "dark",
-  skin: "nova",
-  hotkey: "Alt+Shift+F",
-  disabledSites: []
-};
-
-const PRESETS = {
-  openai: { label: "OpenAI", provider: "openai", baseUrl: "https://api.openai.com/v1", model: "gpt-4o-mini" },
-  openrouter: { label: "OpenRouter", provider: "openai", baseUrl: "https://openrouter.ai/api/v1", model: "openai/gpt-4o-mini" },
-  groq: { label: "Groq", provider: "openai", baseUrl: "https://api.groq.com/openai/v1", model: "llama-3.1-8b-instant" },
-  google: { label: "Google AI Studio", provider: "openai", baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-2.5-flash" },
-  ollama: { label: "Ollama (local)", provider: "openai", baseUrl: "http://localhost:11434/v1", model: "llama3.2" },
-  anthropic: { label: "Anthropic", provider: "anthropic", baseUrl: "https://api.anthropic.com/v1", model: "claude-3-5-haiku-latest" }
-} as const;
-
-type PresetName = keyof typeof PRESETS;
-
-function findPreset(settings: AssistantSettings): PresetName {
-  if (settings.provider === "anthropic") return "anthropic";
-  const hostname = new URL(settings.baseUrl).hostname;
-  if (hostname === "openrouter.ai") return "openrouter";
-  if (hostname === "api.groq.com") return "groq";
-  if (hostname === "generativelanguage.googleapis.com") return "google";
-  if (hostname === "localhost" || hostname === "127.0.0.1") return "ollama";
-  return "openai";
-}
-
 export function WebSettings({ platform, onClose }: { platform: PlatformAdapter; onClose: () => void }) {
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
-  const [preset, setPreset] = useState<PresetName>("openai");
+  const { isAuthenticated } = useAuth();
+  const [settings, setSettings] = useState<AssistantSettings>(defaultSettingsForApiProvider("gemini"));
+  const [apiProvider, setApiProvider] = useState<ApiProvider>("gemini");
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -46,9 +16,9 @@ export function WebSettings({ platform, onClose }: { platform: PlatformAdapter; 
     let mounted = true;
     void platform.storage.get<AssistantSettings>(SETTINGS_KEY).then((saved) => {
       if (!mounted || !saved) return;
-      const merged = { ...DEFAULT_SETTINGS, ...saved };
-      setSettings(merged);
-      setPreset(findPreset(merged));
+      const next: AssistantSettings = { ...defaultSettingsForApiProvider(saved.apiProvider), ...saved };
+      setSettings(next);
+      setApiProvider(saved.apiProvider);
     }).catch((error: unknown) => {
       if (mounted) setStatus(error instanceof Error ? error.message : String(error));
     });
@@ -59,14 +29,13 @@ export function WebSettings({ platform, onClose }: { platform: PlatformAdapter; 
     setSettings((current) => ({ ...current, [key]: value }));
   };
 
-  const selectPreset = (name: PresetName) => {
-    const selected = PRESETS[name];
-    setPreset(name);
+  const selectProvider = (next: ApiProvider) => {
+    setApiProvider(next);
+    if (next === "custom") return;
     setSettings((current) => ({
       ...current,
-      provider: selected.provider,
-      baseUrl: selected.baseUrl,
-      model: selected.model
+      ...API_PRESETS[next],
+      apiProvider: next
     }));
   };
 
@@ -80,13 +49,23 @@ export function WebSettings({ platform, onClose }: { platform: PlatformAdapter; 
         throw new Error("Use an HTTP(S) provider URL without embedded credentials or query parameters.");
       }
       if (base.protocol === "http:" && !["localhost", "127.0.0.1", "[::1]"].includes(base.hostname)) {
-        throw new Error("Use HTTPS for remote providers; HTTP is allowed only for a local service.");
+        throw new Error("Cleartext HTTP provider URLs are only allowed for loopback addresses.");
       }
-      if (settings.apiKey.length > 8192 || settings.model.trim().length === 0 || settings.model.length > 200) {
-        throw new Error("Enter a model name and keep the API key within the supported size.");
+      if (settings.apiKey.length > 8192 || settings.model.length > 200) {
+        throw new Error("A settings value exceeds the supported length.");
       }
-      await platform.storage.set(SETTINGS_KEY, { ...settings, model: settings.model.trim(), hasApiKey: Boolean(settings.apiKey) });
-      setStatus("Saved on this device. Your next message goes directly to the selected provider.");
+      const payload: unknown = {
+        ...settings,
+        disabledSites: [] // web has no per-site blocklist yet
+      };
+      const response = await platform.messaging.send<{ ok: boolean; value?: AssistantSettings; error?: string }>({
+        type: "assistant:settings-save",
+        settings: payload
+      });
+      if (!response.ok || !response.value) throw new Error(response.error || "Settings could not be saved.");
+      setSettings(response.value);
+      setApiProvider(response.value.apiProvider);
+      setStatus("Settings saved.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error));
     } finally {
@@ -95,52 +74,98 @@ export function WebSettings({ platform, onClose }: { platform: PlatformAdapter; 
   };
 
   const clearData = async () => {
-    if (!window.confirm("Clear Frox chats, settings, and saved API key from this browser?")) return;
+    if (!window.confirm("Clear this account's Tex chats, settings, and saved API key from this browser?")) return;
     try {
       await platform.storage.clear();
-      await platform.storage.set(SETTINGS_KEY, DEFAULT_SETTINGS);
+      const defaults = defaultSettingsForApiProvider("gemini");
+      await platform.storage.set(SETTINGS_KEY, defaults);
       await platform.storage.set("assistant:threads", []);
       await platform.storage.set("assistant:position", {
         x: Math.max(12, window.innerWidth - 86),
         y: Math.max(12, window.innerHeight - 96)
       });
-      setSettings(DEFAULT_SETTINGS);
-      setPreset("openai");
-      setStatus("Local Frox data cleared.");
+      setSettings(defaults);
+      setApiProvider("gemini");
+      setStatus("Local Tex data cleared.");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : String(error));
     }
   };
 
+  const openAuth = () => {
+    onClose();
+    setTimeout(() => window.dispatchEvent(new Event("tex:web-settings")), 0);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div className="tex-web-settings-backdrop" onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}>
+        <section className="tex-web-settings" role="dialog" aria-modal="true" aria-labelledby="tex-web-settings-title">
+          <header>
+            <div><p>YOUR DEVICE, YOUR CHOICE</p><h2 id="tex-web-settings-title">Sign in to Tex</h2></div>
+            <button type="button" className="tex-web-settings-close" aria-label="Close settings" onClick={onClose}>×</button>
+          </header>
+          <p className="tex-web-privacy">
+            Sign in to unlock personal memory and deeper chats. Provider keys, conversations, and settings stay in this browser.
+          </p>
+          <div className="tex-web-settings-actions" style={{ display: "grid", gap: 10, marginTop: 16 }}>
+            <button type="button" className="tex-web-save" onClick={() => void openAuth()}>Sign in</button>
+            <button type="button" className="tex-web-clear" onClick={() => void onClose()}>Not now</button>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  const custom = apiProvider === "custom";
+
   return (
-    <div className="frox-web-settings-backdrop" onMouseDown={(event) => {
+    <div className="tex-web-settings-backdrop" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
-      <section className="frox-web-settings" role="dialog" aria-modal="true" aria-labelledby="frox-web-settings-title">
+      <section className="tex-web-settings" role="dialog" aria-modal="true" aria-labelledby="tex-web-settings-title">
         <header>
-          <div><p>YOUR DEVICE, YOUR CHOICE</p><h2 id="frox-web-settings-title">Chat settings</h2></div>
-          <button type="button" className="frox-web-settings-close" aria-label="Close settings" onClick={onClose}>×</button>
+          <div><p>YOUR DEVICE, YOUR CHOICE</p><h2 id="tex-web-settings-title">Chat settings</h2></div>
+          <button type="button" className="tex-web-settings-close" aria-label="Close settings" onClick={onClose}>×</button>
         </header>
-        <p className="frox-web-privacy">
-          This website has no Frox chat server. Chats and your key are stored in this browser (not encrypted); requests go directly from your browser to the provider you choose. Don’t save a key on a shared device.
+        <p className="tex-web-privacy">
+          This website has no Tex chat server. Chats and your key are stored in this browser (not encrypted); requests go directly from your browser to the provider you choose. Don’t save a key on a shared device.
         </p>
         <form onSubmit={(event) => void save(event)}>
           <label>
-            Provider
-            <select value={preset} onChange={(event) => selectPreset(event.target.value as PresetName)}>
-              {Object.entries(PRESETS).map(([key, value]) => <option key={key} value={key}>{value.label}</option>)}
+            API provider
+            <select value={apiProvider} onChange={(event) => selectProvider(event.target.value as ApiProvider)}>
+              <option value="gemini">Gemini</option>
+              <option value="openrouter">OpenRouter</option>
+              <option value="custom">Custom</option>
             </select>
           </label>
           <label>
             Model
-            <input value={settings.model} onChange={(event) => updateSetting("model", event.target.value)} autoComplete="off" required />
+            <input
+              value={settings.model}
+              onChange={(event) => updateSetting("model", event.target.value)}
+              autoComplete="off"
+              required
+              disabled={!custom}
+            />
+            {!custom && <span className="tex-web-optional">Preset for {apiProvider}</span>}
           </label>
           <label>
             Provider API URL
-            <input value={settings.baseUrl} onChange={(event) => updateSetting("baseUrl", event.target.value)} autoComplete="url" required />
+            <input
+              value={settings.baseUrl}
+              onChange={(event) => updateSetting("baseUrl", event.target.value)}
+              autoComplete="url"
+              required
+              disabled={!custom}
+            />
+            {!custom && <span className="tex-web-optional">Preset for {apiProvider}</span>}
           </label>
           <label>
-            API key <span className="frox-web-optional">{preset === "ollama" ? "optional for local Ollama" : "saved only in this browser"}</span>
+            API key <span className="tex-web-optional">saved only in this browser</span>
             <input
               type="password"
               value={settings.apiKey}
@@ -149,13 +174,13 @@ export function WebSettings({ platform, onClose }: { platform: PlatformAdapter; 
               spellCheck={false}
             />
           </label>
-          <p className="frox-web-provider-note">
-            Free-tier access and browser CORS support depend on your provider. Ollama must allow this site as an origin. Frox does not proxy or receive your messages or key.
+          <p className="tex-web-provider-note">
+            Free-tier access and browser CORS support depend on your provider. Requests go directly from your browser to the provider; Tex does not proxy or receive your messages or key.
           </p>
-          {status && <p className="frox-web-settings-status" role="status">{status}</p>}
-          <div className="frox-web-settings-actions">
-            <button type="button" className="frox-web-clear" onClick={() => void clearData()}>Clear local data</button>
-            <button type="submit" className="frox-web-save" disabled={saving}>{saving ? "Saving…" : "Save settings"}</button>
+          {status && <p className="tex-web-settings-status" role="status">{status}</p>}
+          <div className="tex-web-settings-actions">
+            <button type="button" className="tex-web-clear" onClick={() => void clearData()}>Clear local data</button>
+            <button type="submit" className="tex-web-save" disabled={saving}>{saving ? "Saving…" : "Save settings"}</button>
           </div>
         </form>
       </section>

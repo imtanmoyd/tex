@@ -1,11 +1,11 @@
 {
-  "name": "@frox/web",
+  "name": "@tex/web",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@frox/core": "*",
-    "@frox/ui": "*",
+    "@tex/core": "*",
+    "@tex/ui": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   }

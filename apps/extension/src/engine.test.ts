@@ -38,7 +38,7 @@ describe("local engine bridge", () => {
     });
     expect(fetcher.mock.calls[0][0]).toBe("http://127.0.0.1:8765/bootstrap");
     expect(fetcher.mock.calls[1][0]).toBe("http://127.0.0.1:8765/providers/status");
-    expect(new Headers(fetcher.mock.calls[1][1]?.headers).get("X-Frox-Token")).toBe(TOKEN);
+    expect(new Headers(fetcher.mock.calls[1][1]?.headers).get("X-Tex-Token")).toBe(TOKEN);
   });
 
   it("reports an offline engine so the caller can stay in extension mode", async () => {
@@ -77,7 +77,7 @@ describe("local engine bridge", () => {
     );
 
     expect(chunks).toEqual(["Hello"]);
-    expect(new Headers(fetcher.mock.calls[1][1]?.headers).get("X-Frox-Token")).toBe(TOKEN);
+    expect(new Headers(fetcher.mock.calls[1][1]?.headers).get("X-Tex-Token")).toBe(TOKEN);
     expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toEqual({
       conversationId: "chat-1",
       siteHost: "example.com",
