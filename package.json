@@ -17,7 +17,8 @@
     "build:web": "vite build --config apps/web/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "postinstall": "node -e \"const {execSync}=require('child_process');try{execSync('chmod +x node_modules/.bin/*',{stdio:'inherit'})}catch(e){}\""
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.32",
